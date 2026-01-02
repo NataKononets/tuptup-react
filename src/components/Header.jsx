@@ -7,7 +7,7 @@ import {
   FaBars,
 } from "react-icons/fa";
 
-import logo from "../assets/logo.png";
+import logo from "../assets/img/logo.png";
 import { useCart } from "../context/CartContext";
 import { useSearch } from "../context/SearchContext";
 import { useProducts } from "../hooks/useProducts";
