@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Contact() {
+  const { t } = useLanguage();
+
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // honeypot (анти-бот)
   const [botField, setBotField] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
-
-    // 🛑 если бот заполнил скрытое поле — ничего не делаем
     if (botField) return;
 
     setLoading(true);
 
-    // имитация отправки
     setTimeout(() => {
       setLoading(false);
       setSent(true);
@@ -25,17 +23,21 @@ export default function Contact() {
 
   return (
     <div className="container py-5">
-      <h2 className="contact-title text-center mb-5">Contact Us</h2>
+      <h2 className="contact-title text-center mb-5">
+        {t("CONTACT_TITLE")}
+      </h2>
 
       <div className="row g-5 align-items-start">
-        {/* LEFT INFO */}
+
         <div className="col-md-5">
           <div className="contact-info">
-            <h5 className="contact-subtitle">Get in touch</h5>
+            <h5 className="contact-subtitle">
+              {t("CONTACT_GET_IN_TOUCH")}
+            </h5>
 
             <p className="contact-text">
               <FaMapMarkerAlt className="me-2 text-warning" />
-              Warsaw, Poland
+              {t("CONTACT_ADDRESS")}
             </p>
 
             <p className="contact-text">
@@ -48,26 +50,27 @@ export default function Contact() {
               +48 500 200 300
             </p>
 
-            <h6 className="contact-subtitle mt-4">Working hours</h6>
-            <p className="contact-text">Mon – Fri: 9:00 – 18:00</p>
-            <p className="contact-text">Sat – Sun: Closed</p>
+            <h6 className="contact-subtitle mt-4">
+              {t("CONTACT_HOURS")}
+            </h6>
+            <p className="contact-text">{t("CONTACT_WEEK")}</p>
+            <p className="contact-text">{t("CONTACT_WEEKEND")}</p>
           </div>
         </div>
 
-        {/* RIGHT FORM */}
         <div className="col-md-7">
           <div className="contact-form">
             {sent ? (
               <div className="contact-success text-center">
-                <h5>Thank you! 💛</h5>
+                <h5>{t("CONTACT_SUCCESS_TITLE")} 💛</h5>
                 <p>
-                  Your message has been sent.<br />
-                  Our team will contact you shortly.
+                  {t("CONTACT_SUCCESS_TEXT_1")}<br />
+                  {t("CONTACT_SUCCESS_TEXT_2")}
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
-                {/* HONEYPOT (СКРЫТО) */}
+          
                 <input
                   type="text"
                   style={{ display: "none" }}
@@ -75,63 +78,69 @@ export default function Contact() {
                   onChange={(e) => setBotField(e.target.value)}
                 />
 
-                {/* NAME */}
                 <div className="mb-3">
-                  <label className="form-label">Your Name</label>
+                  <label className="form-label">
+                    {t("CONTACT_NAME")}
+                  </label>
                   <input
                     type="text"
                     className="form-control"
                     required
                     minLength={2}
                     maxLength={50}
-                    placeholder="John Doe"
+                    placeholder={t("CONTACT_NAME_PH")}
                   />
                 </div>
 
-                {/* EMAIL */}
                 <div className="mb-3">
-                  <label className="form-label">Email Address</label>
+                  <label className="form-label">
+                    {t("CONTACT_EMAIL")}
+                  </label>
                   <input
                     type="email"
                     className="form-control"
                     required
                     maxLength={100}
                     pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"
-                    placeholder="email@example.com"
+                    placeholder={t("CONTACT_EMAIL_PH")}
                   />
                 </div>
 
-                {/* PHONE */}
                 <div className="mb-3">
-                  <label className="form-label">Phone (optional)</label>
+                  <label className="form-label">
+                    {t("CONTACT_PHONE")}
+                  </label>
                   <input
                     type="tel"
                     className="form-control"
-                    placeholder="+48 500 200 300"
+                    placeholder={t("CONTACT_PHONE_PH")}
                     pattern="^[0-9+\s()-]{7,15}$"
                     maxLength={15}
                   />
                 </div>
 
-                {/* MESSAGE */}
                 <div className="mb-4">
-                  <label className="form-label">Message</label>
+                  <label className="form-label">
+                    {t("CONTACT_MESSAGE")}
+                  </label>
                   <textarea
                     rows="5"
                     className="form-control"
                     required
                     minLength={10}
                     maxLength={500}
-                    placeholder="Write your message here..."
+                    placeholder={t("CONTACT_MESSAGE_PH")}
                   />
                 </div>
 
                 <button
-type="submit"
+                  type="submit"
                   className="contact-btn"
                   disabled={loading}
                 >
-                  {loading ? "Sending..." : "Send Message"}
+                  {loading
+                    ? t("CONTACT_SENDING")
+                    : t("CONTACT_SEND")}
                 </button>
               </form>
             )}

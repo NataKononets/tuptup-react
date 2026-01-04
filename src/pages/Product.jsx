@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../hooks/useProducts";
+import { useLanguage } from "../context/LanguageContext";
 import { FiMinus, FiPlus } from "react-icons/fi";
 
 export default function Product() {
@@ -9,15 +10,13 @@ export default function Product() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products } = useProducts();
+  const { t } = useLanguage();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState("");
   const [qty, setQty] = useState(1);
 
-  /* ============================
-     LOAD PRODUCT
-  ============================ */
   useEffect(() => {
     fetch(`https://dummyjson.com/products/${id}`)
       .then(res => res.json())
@@ -29,16 +28,13 @@ export default function Product() {
   }, [id]);
 
   if (loading) {
-    return <p className="text-center py-5">Loading product...</p>;
+    return <p className="text-center py-5">{t("PRODUCT_LOADING")}</p>;
   }
 
   if (!product) {
-    return <p className="text-center py-5">Product not found</p>;
+    return <p className="text-center py-5">{t("PRODUCT_NOT_FOUND")}</p>;
   }
 
-  /* ============================
-     RELATED PRODUCTS
-  ============================ */
   const relatedProducts = products
     .filter(
       p => p.category === product.category && p.id !== product.id
@@ -48,17 +44,15 @@ export default function Product() {
   return (
     <section className="container py-5">
 
-      {/* BACK */}
       <button
         className="btn btn-link mb-4 px-0"
         onClick={() => navigate("/shop")}
       >
-        ← Back to shop
+        ← {t("BACK_TO_SHOP")}
       </button>
 
       <div className="row g-5 align-items-start">
 
-        {/* IMAGES */}
         <div className="col-12 col-md-6">
           <img
             src={activeImage}
@@ -82,19 +76,17 @@ export default function Product() {
           </div>
         </div>
 
-        {/* INFO */}
         <div className="col-12 col-md-6">
           <h2 className="mb-3">{product.title}</h2>
 
           <p className="text-muted">
-            Category: {product.category}
+            {t("CATEGORY")}: {product.category}
           </p>
 
           <h3 className="mb-3">${product.price}</h3>
 
           <p className="mb-4">{product.description}</p>
 
-          {/* QTY */}
           <div className="d-flex align-items-center gap-3 mb-4">
             <button
               className="btn btn-outline-dark"
@@ -113,20 +105,18 @@ export default function Product() {
             </button>
           </div>
 
-          {/* ADD */}
           <button
             className="btn tup-btn px-5 py-2"
             onClick={() => addToCart(product, qty)}
           >
-            Add {qty} to cart
+            {t("ADD_TO_CART")} ({qty})
           </button>
         </div>
       </div>
 
-      {/* RELATED */}
       {relatedProducts.length > 0 && (
         <>
-          <h4 className="mt-5 mb-4">You may also like</h4>
+          <h4 className="mt-5 mb-4">{t("RELATED_PRODUCTS")}</h4>
 
           <div className="row g-4">
             {relatedProducts.map(p => (
@@ -143,8 +133,7 @@ export default function Product() {
                   <h6>
                     <Link
                       to={`/product/${p.id}`}
-className="text-decoration-none text-dark"
-                    >
+                      className="text-decoration-none text-dark">
                       {p.title}
                     </Link>
                   </h6>

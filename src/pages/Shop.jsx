@@ -1,96 +1,91 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useSearch } from "../context/SearchContext";
 import { useProducts } from "../hooks/useProducts";
 import { useCart } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Shop() {
   const { products, loading, error } = useProducts();
   const { addToCart } = useCart();
   const { searchQuery } = useSearch();
+  const { t } = useLanguage();
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [sort, setSort] = useState("default");
   const [visibleCount, setVisibleCount] = useState(4);
 
-  if (loading) return <p className="text-center py-5">Loading…</p>;
+  if (loading) return <p className="text-center py-5">{t("LOADING")}</p>;
   if (error) return <p className="text-center text-danger">{error}</p>;
 
-  /* 🔍 SEARCH */
-  let filtered = products.filter(p =>
+  let filtered = products.filter((p) =>
     `${p.title} ${p.description} ${p.category}`
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
 
-  /* 🏷 CATEGORY */
   if (activeCategory !== "all") {
-    filtered = filtered.filter(p => p.category === activeCategory);
+    filtered = filtered.filter((p) => p.category === activeCategory);
   }
 
-  /* 🔃 SORT */
   if (sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") filtered.sort((a, b) => b.price - a.price);
   if (sort === "title-asc") filtered.sort((a, b) => a.title.localeCompare(b.title));
   if (sort === "title-desc") filtered.sort((a, b) => b.title.localeCompare(a.title));
 
-  const categories = ["all", ...new Set(products.map(p => p.category))];
+  const categories = ["all", ...new Set(products.map((p) => p.category))];
   const visibleProducts = filtered.slice(0, visibleCount);
 
   return (
     <section className="container py-5">
 
-      {/* TITLE */}
       <div className="text-center mb-4">
-        <h2 className="fw-bold">Shop</h2>
-        <p className="text-muted">Find the best products for kids</p>
+        <h2 className="fw-bold">{t("SHOP")}</h2>
+        <p className="text-muted">{t("SHOP_DESC")}</p>
       </div>
 
-      {/* FILTERS */}
       <div className="d-flex flex-column gap-4 mb-4">
 
-        {/* CATEGORIES CENTER */}
         <div className="d-flex flex-wrap justify-content-center gap-2">
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat}
-              className={`btn ${activeCategory === cat ? "btn-dark" : "btn-outline-dark"}`}
+              className={`btn ${
+                activeCategory === cat ? "btn-dark" : "btn-outline-dark"
+              }`}
               onClick={() => {
                 setActiveCategory(cat);
                 setVisibleCount(4);
               }}
             >
-              {cat}
+              {cat === "all" ? t("ALL") : cat}
             </button>
           ))}
         </div>
 
-        {/* SORT */}
         <div className="text-center">
           <select
             className="form-select w-auto mx-auto"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
           >
-            <option value="default">Sort by</option>
-            <option value="price-asc">Price ↑</option>
-            <option value="price-desc">Price ↓</option>
-            <option value="title-asc">Name A–Z</option>
-            <option value="title-desc">Name Z–A</option>
+            <option value="default">{t("SORT_BY")}</option>
+            <option value="price-asc">{t("PRICE_ASC")}</option>
+            <option value="price-desc">{t("PRICE_DESC")}</option>
+            <option value="title-asc">{t("NAME_ASC")}</option>
+            <option value="title-desc">{t("NAME_DESC")}</option>
           </select>
         </div>
       </div>
 
-      {/* EMPTY */}
       {visibleProducts.length === 0 && (
         <p className="text-center text-muted fs-5">
-          Nothing found 😔
+          {t("NOTHING_FOUND")}
         </p>
       )}
 
-      {/* PRODUCTS */}
       <div className="row g-4">
-        {visibleProducts.map(product => (
+        {visibleProducts.map((product) => (
           <div key={product.id} className="col-6 col-md-4 col-lg-3">
             <div className="product-card h-100 d-flex flex-column">
 
@@ -114,22 +109,20 @@ export default function Shop() {
                 className="btn tup-btn w-100 mt-auto"
                 onClick={() => addToCart(product)}
               >
-                Add to cart
+                {t("ADD_TO_CART")}
               </button>
-
-            </div>
+              </div>
           </div>
         ))}
       </div>
 
-      {/* LOAD MORE */}
       {visibleCount < filtered.length && (
         <div className="text-center mt-5">
           <button
-className="btn btn-outline-dark px-5 py-2"
-            onClick={() => setVisibleCount(prev => prev + 4)}
+            className="btn btn-outline-dark px-5 py-2"
+            onClick={() => setVisibleCount((prev) => prev + 4)}
           >
-            Load more
+            {t("LOAD_MORE")}
           </button>
         </div>
       )}

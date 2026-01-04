@@ -1,6 +1,7 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
 import { FiTrash2, FiPlus, FiMinus } from "react-icons/fi";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Cart() {
   const {
@@ -12,15 +13,17 @@ export default function Cart() {
     totalCount,
   } = useCart();
 
+  const { t } = useLanguage();
+
   if (cart.length === 0) {
     return (
       <section className="container py-5 text-center">
-        <h2 className="mb-3">Your cart is empty 🛒</h2>
+        <h2 className="mb-3">{t("CART_EMPTY_TITLE")} 🛒</h2>
         <p className="text-muted mb-4">
-          Looks like you haven’t added anything yet
+          {t("CART_EMPTY_TEXT")}
         </p>
         <Link to="/shop" className="btn btn-dark px-4">
-          Go to shop
+          {t("CART_GO_SHOP")}
         </Link>
       </section>
     );
@@ -28,12 +31,12 @@ export default function Cart() {
 
   return (
     <section className="container py-5">
-      <h2 className="fw-bold mb-4">Your Cart</h2>
+      <h2 className="fw-bold mb-4">{t("CART_TITLE")}</h2>
 
       <div className="row g-4">
-        {/* LEFT — ITEMS */}
+    
         <div className="col-lg-8">
-          {cart.map(item => (
+          {cart.map((item) => (
             <div
               key={item.id}
               className="d-flex align-items-center gap-3 mb-4 border-bottom pb-3"
@@ -87,18 +90,19 @@ export default function Cart() {
           ))}
         </div>
 
-        {/* RIGHT — SUMMARY */}
         <div className="col-lg-4">
           <div className="p-4 rounded bg-light shadow-sm position-sticky top-0">
-            <h4 className="fw-bold mb-3">Order Summary</h4>
+            <h4 className="fw-bold mb-3">
+              {t("CART_SUMMARY")}
+            </h4>
 
             <div className="d-flex justify-content-between mb-2">
-              <span>Items</span>
+              <span>{t("CART_ITEMS")}</span>
               <span>{totalCount}</span>
             </div>
 
             <div className="d-flex justify-content-between fw-semibold fs-5">
-              <span>Total</span>
+              <span>{t("CART_TOTAL")}</span>
               <span>${totalPrice.toFixed(2)}</span>
             </div>
 
@@ -106,7 +110,7 @@ export default function Cart() {
               to="/checkout"
               className="btn btn-danger w-100 mt-4"
             >
-              Proceed to Checkout
+              {t("CART_CHECKOUT")}
             </Link>
           </div>
         </div>
