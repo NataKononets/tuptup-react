@@ -18,13 +18,16 @@ export default function Product() {
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
+    setLoading(true);
+
     fetch(`https://dummyjson.com/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setProduct(data);
         setActiveImage(data.thumbnail);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -37,13 +40,12 @@ export default function Product() {
 
   const relatedProducts = products
     .filter(
-      p => p.category === product.category && p.id !== product.id
+      (p) => p.category === product.category && p.id !== product.id
     )
     .slice(0, 4);
 
   return (
     <section className="container py-5">
-
       <button
         className="btn btn-link mb-4 px-0"
         onClick={() => navigate("/shop")}
@@ -52,7 +54,6 @@ export default function Product() {
       </button>
 
       <div className="row g-5 align-items-start">
-
         <div className="col-12 col-md-6">
           <img
             src={activeImage}
@@ -61,7 +62,7 @@ export default function Product() {
           />
 
           <div className="d-flex gap-2 flex-wrap">
-            {product.images.map(img => (
+            {(product.images || []).map((img) => (
               <img
                 key={img}
                 src={img}
@@ -83,14 +84,16 @@ export default function Product() {
             {t("CATEGORY")}: {product.category}
           </p>
 
-          <h3 className="mb-3">${product.price}</h3>
+          <h3 className="mb-3">
+            ${Number(product.price).toFixed(2)}
+          </h3>
 
           <p className="mb-4">{product.description}</p>
 
           <div className="d-flex align-items-center gap-3 mb-4">
             <button
               className="btn btn-outline-dark"
-              onClick={() => setQty(q => Math.max(1, q - 1))}
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
             >
               <FiMinus />
             </button>
@@ -99,7 +102,7 @@ export default function Product() {
 
             <button
               className="btn btn-outline-dark"
-              onClick={() => setQty(q => q + 1)}
+              onClick={() => setQty((q) => q + 1)}
             >
               <FiPlus />
             </button>
@@ -119,7 +122,7 @@ export default function Product() {
           <h4 className="mt-5 mb-4">{t("RELATED_PRODUCTS")}</h4>
 
           <div className="row g-4">
-            {relatedProducts.map(p => (
+            {relatedProducts.map((p) => (
               <div key={p.id} className="col-6 col-md-3">
                 <div className="product-card h-100">
                   <Link to={`/product/${p.id}`}>
@@ -133,12 +136,14 @@ export default function Product() {
                   <h6>
                     <Link
                       to={`/product/${p.id}`}
-                      className="text-decoration-none text-dark">
-                      {p.title}
+                      className="text-decoration-none text-dark"
+                    >{p.title}
                     </Link>
                   </h6>
 
-                  <p className="fw-semibold">${p.price}</p>
+                  <p className="fw-semibold">
+                    ${Number(p.price).toFixed(2)}
+                  </p>
                 </div>
               </div>
             ))}

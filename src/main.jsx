@@ -10,6 +10,7 @@ import { BrowserRouter } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { SearchProvider } from "./context/SearchContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import { AuthProvider } from "./context/AuthContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <LanguageProvider>
         <CartProvider>
           <SearchProvider>
-            <App />
+            <AuthProvider>
+              <App />
+            </AuthProvider>
           </SearchProvider>
         </CartProvider>
       </LanguageProvider>

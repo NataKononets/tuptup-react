@@ -1,170 +1,174 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
 
+const initialForm = {
+  name: "",
+  email: "",
+  address: "",
+  botField: "",
+};
+
 export default function Checkout() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { totalPrice, clearCart } = useCart();
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    address: "",
-  });
-
+  const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [orderNumber, setOrderNumber] = useState("");
 
-  const isEmailValid = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const generateOrderNumber = () =>
-    `TUP-${Date.now().toString().slice(-6)}`;
-
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
 
-    if (name === "name" && value.length > 40) return;
-    if (name === "email" && value.length > 50) return;
-    if (name === "address" && value.length > 80) return;
+  function isEmailValid(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
 
-    setForm({ ...form, [name]: value });
-  };
+  function isFormValid() {
+    return (
+      form.name.trim() &&
+      isEmailValid(form.email) &&
+      form.address.trim()
+    );
+  }
 
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.address) {
-      alert(t("CHECKOUT_FILL_ALL"));
-      return;
-    }
 
-    if (!isEmailValid(form.email)) {
-      alert(t("CHECKOUT_INVALID_EMAIL"));
-      return;
-    }
+    if (form.botField) return;
+
+    if (!isFormValid() || loading) return;
 
     setLoading(true);
 
     setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
-      setOrderNumber(generateOrderNumber());
       clearCart();
-    }, 2000);
-  };
-
-  if (cart.length === 0 && !success) {
-    return (
-      <div className="container py-5 text-center">
-        <h2>{t("CHECKOUT_EMPTY")} 🛒</h2>
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div className="container py-5 text-center">
-        <h2 className="fw-bold mb-3">
-          {t("CHECKOUT_SUCCESS_TITLE")} 🎉
-        </h2>
-
-        <p className="fs-5">
-          {t("CHECKOUT_SUCCESS_TEXT")}
-        </p>
-
-        <p className="text-muted">
-          {t("CHECKOUT_ORDER")} <strong>{orderNumber}</strong>
-        </p>
-
-        <div className="mt-4">
-          <span className="badge bg-success fs-6 px-4 py-2">
-            {t("CHECKOUT_PAYMENT_CONFIRMED")}
-          </span>
-        </div>
-
-        <p className="text-muted mt-4">
-          {t("CHECKOUT_ADMIN")}
-        </p>
-      </div>
-    );
+      setSuccess(true);
+      setLoading(false);
+    }, 1800);
   }
 
   return (
-    <div className="container py-5">
-      <h2 className="mb-4 text-center">
+    <div className="container py-5" style={{ maxWidth: 620 }}>
+      <h2 className="text-center mb-4">
         {t("CHECKOUT_TITLE")}
       </h2>
 
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <form onSubmit={handleSubmit} className="border p-4 rounded">
+      {!success ? (
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white border rounded-3 p-4 shadow-sm"
+          noValidate
+        >
+ 
+          <input
+            type="text"
+            name="botField"
+            value={form.botField}
+            onChange={handleChange}
+            style={{ display: "none" }}
+            tabIndex={-1}
+            autoComplete="off"
+          />
 
-            <div className="mb-3">
-              <label className="form-label">
-                {t("CHECKOUT_NAME")}
-              </label>
-              <input
-                type="text"
-                name="name"
-                className="form-control"
-                value={form.name}
-                onChange={handleChange}
-                placeholder={t("CHECKOUT_NAME_PH")}
-                required
-              />
-            </div>
+          <div className="mb-3">
+            <label className="form-label">
+              {t("CHECKOUT_NAME")}
+            </label>
+            <input
+              type="text"
+              name="name"
+              className="form-control"
+              placeholder={t("CHECKOUT_NAME_PH")}
+              value={form.name}
+              onChange={handleChange}
+              autoComplete="name"
+              required
+            />
+          </div>
 
-            <div className="mb-3">
-              <label className="form-label">
-                {t("CHECKOUT_EMAIL")}
-              </label>
-              <input
-                type="email"
-                name="email"
-                className="form-control"
-                value={form.email}
-                onChange={handleChange}
-                placeholder={t("CHECKOUT_EMAIL_PH")}
-                required
-              />
-              <div className="form-text">
-                {t("CHECKOUT_EMAIL_HELP")}
-              </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="form-label">
-                {t("CHECKOUT_ADDRESS")}
-              </label>
-              <textarea
-                name="address"
-                className="form-control"
-                rows="3"
-                value={form.address}
-                onChange={handleChange}
-                placeholder={t("CHECKOUT_ADDRESS_PH")}
-                required
-              />
-            </div><div className="d-flex justify-content-between fw-bold fs-5 mb-3">
-              <span>{t("CHECKOUT_TOTAL")}</span>
-              <span>${totalPrice.toFixed(2)}</span>
+          <div className="mb-3">
+            <label className="form-label">
+              {t("CHECKOUT_EMAIL")}
+            </label>
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              placeholder={t("CHECKOUT_EMAIL_PH")}
+              value={form.email}
+              onChange={handleChange}
+              autoComplete="email"
+              required
+            />
+            <div className="form-text">
+              {t("CHECKOUT_EMAIL_HELP")}
             </div>
+          </div>
+
+
+          <div className="mb-4">
+            <label className="form-label">
+              {t("CHECKOUT_ADDRESS")}
+            </label>
+            <textarea
+              name="address"
+              rows="3"
+              className="form-control"
+              placeholder={t("CHECKOUT_ADDRESS_PH")}
+              value={form.address}
+              onChange={handleChange}
+              autoComplete="street-address"
+              required
+            />
+          </div>
+
+
+          <div className="d-flex justify-content-between align-items-center fw-semibold fs-5 mb-4">
+            <span>{t("CHECKOUT_TOTAL")}</span>
+            <span>${totalPrice.toFixed(2)}</span>
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-dark w-100 py-2"
+            disabled={!isFormValid() || loading}
+          >
+            {loading
+              ? t("CHECKOUT_PROCESSING")
+              : t("CHECKOUT_PAY")}
+          </button>
+        </form>
+      ) : (
+     
+        <div className="text-center bg-white border rounded-3 p-5 shadow-sm">
+          <h3 className="mb-3">
+            {t("CHECKOUT_SUCCESS_TITLE")}
+          </h3>
+          <p className="text-muted mb-4">
+            {t("CHECKOUT_SUCCESS_TEXT")}
+          </p>
+
+          <div className="d-flex flex-column gap-3">
+            <Link to="/register" className="btn btn-dark">
+              {t("CHECKOUT_CREATE_ACCOUNT")}
+            </Link>
 
             <button
-              type="submit"
-              className="btn btn-success w-100 py-2"
-              disabled={loading}
+              className="btn btn-outline-dark"
+              onClick={() => navigate("/")}
             >
-              {loading
-                ? t("CHECKOUT_PROCESSING")
-                : t("CHECKOUT_PAY")}
+              {t("CHECKOUT_BACK_HOME")}
             </button>
-
-          </form>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

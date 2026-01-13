@@ -5,14 +5,18 @@ import {
   FaTimes,
   FaShoppingCart,
   FaBars,
+  FaUser,
 } from "react-icons/fa";
 
 import logo from "../assets/img/logo-temp.png";
+
 import { useCart } from "../context/CartContext";
 import { useSearch } from "../context/SearchContext";
 import { useProducts } from "../hooks/useProducts";
 import { useDebounce } from "../hooks/useDebounce";
 import { useLanguage } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
+
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
@@ -20,12 +24,14 @@ export default function Header() {
   const { searchQuery, setSearchQuery } = useSearch();
   const { products } = useProducts();
   const { t } = useLanguage();
+  const { user, logout } = useAuth();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const debouncedQuery = useDebounce(searchQuery, 300);
+
   const suggestions =
     debouncedQuery.trim().length > 0
       ? products
@@ -52,12 +58,13 @@ export default function Header() {
           <Link
             to="/"
             className="d-flex align-items-center gap-2 text-decoration-none"
+            aria-label="logo"
           >
             <img src={logo} alt="TupTup" height="40" />
             <span className="fs-4 fw-bold text-dark">TupTup</span>
           </Link>
 
-          <nav className="d-none d-md-flex gap-4">
+          <nav className="d-none d-md-flex gap-4" aria-label="main-navigation">
             <NavLink to="/" className="text-dark text-decoration-none">
               {t("HOME")}
             </NavLink>
@@ -72,15 +79,15 @@ export default function Header() {
             </NavLink>
           </nav>
 
-            <div className="d-flex align-items-center gap-3 position-relative">
+          <div className="d-flex align-items-center gap-3 position-relative">
 
             <LanguageSwitcher />
 
-             {!searchOpen ? (
+            {!searchOpen ? (
               <button
-                className="btn fs-5"
+                className="btn"
+                aria-label="open-search"
                 onClick={() => setSearchOpen(true)}
-                aria-label="Open search"
               >
                 <FaSearch />
               </button>
@@ -98,14 +105,15 @@ export default function Header() {
                     }}
                     onKeyDown={handleEnter}
                     autoFocus
+                    aria-label="search-input"
                   />
                   <button
                     className="btn p-0 ms-2"
+                    aria-label="close-search"
                     onClick={() => {
                       setSearchQuery("");
                       setSearchOpen(false);
                     }}
-                    aria-label="Close search"
                   >
                     <FaTimes />
                   </button>
@@ -128,8 +136,35 @@ export default function Header() {
               </div>
             )}
 
-            <Link to="/cart" className="position-relative text-dark">
-              <FaShoppingCart size={18} />
+{user ? (
+  <button
+    aria-label="logout"
+    className="btn btn-outline-dark d-flex align-items-center gap-2"
+    onClick={logout}
+  >
+    <FaUser />
+    <span className="d-none d-md-inline">
+      {user.email}
+    </span>
+  </button>
+) : (
+  <Link
+    to="/login"
+    aria-label="login"
+    className="btn btn-outline-dark"
+  >
+    <FaUser className="me-1" />
+    {t("LOGIN")}
+  </Link>
+)}
+
+            {/* CART */}
+            <Link
+              to="/cart"
+              className="position-relative text-dark"
+              aria-label="cart"
+            >
+              <FaShoppingCart />
               {totalCount > 0 && (
                 <span className="badge bg-danger position-absolute top-0 start-100 translate-middle">
                   {totalCount}
@@ -137,16 +172,18 @@ export default function Header() {
               )}
             </Link>
 
+            {/* BURGER */}
             <button
-              className="btn fs-4 d-md-none"
+              className="btn d-md-none"
+              aria-label="open-menu"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Menu"
             >
               <FaBars />
             </button>
           </div>
         </div>
 
+        {/* MOBILE MENU */}
         {menuOpen && (
           <div className="d-md-none mt-3 border-top pt-3">
             <NavLink to="/" className="d-block mb-2" onClick={() => setMenuOpen(false)}>

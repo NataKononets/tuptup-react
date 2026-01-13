@@ -15,8 +15,13 @@ export default function Shop() {
   const [sort, setSort] = useState("default");
   const [visibleCount, setVisibleCount] = useState(4);
 
-  if (loading) return <p className="text-center py-5">{t("LOADING")}</p>;
-  if (error) return <p className="text-center text-danger">{error}</p>;
+  if (loading) {
+    return <p className="text-center py-5">{t("LOADING")}</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-danger">{error}</p>;
+  }
 
   let filtered = products.filter((p) =>
     `${p.title} ${p.description} ${p.category}`
@@ -28,6 +33,7 @@ export default function Shop() {
     filtered = filtered.filter((p) => p.category === activeCategory);
   }
 
+
   if (sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") filtered.sort((a, b) => b.price - a.price);
   if (sort === "title-asc") filtered.sort((a, b) => a.title.localeCompare(b.title));
@@ -38,14 +44,12 @@ export default function Shop() {
 
   return (
     <section className="container py-5">
-
       <div className="text-center mb-4">
         <h2 className="fw-bold">{t("SHOP")}</h2>
         <p className="text-muted">{t("SHOP_DESC")}</p>
       </div>
 
       <div className="d-flex flex-column gap-4 mb-4">
-
         <div className="d-flex flex-wrap justify-content-center gap-2">
           {categories.map((cat) => (
             <button
@@ -88,7 +92,6 @@ export default function Shop() {
         {visibleProducts.map((product) => (
           <div key={product.id} className="col-6 col-md-4 col-lg-3">
             <div className="product-card h-100 d-flex flex-column">
-
               <Link
                 to={`/product/${product.id}`}
                 className="text-decoration-none text-dark"
@@ -96,7 +99,7 @@ export default function Shop() {
                 <img
                   src={product.thumbnail}
                   alt={product.title}
-                  className="mb-3"
+                  className="mb-3 img-fluid"
                 />
                 <h5 className="flex-grow-1">{product.title}</h5>
               </Link>
@@ -111,8 +114,8 @@ export default function Shop() {
               >
                 {t("ADD_TO_CART")}
               </button>
-              </div>
-          </div>
+            </div>
+            </div>
         ))}
       </div>
 
@@ -126,7 +129,6 @@ export default function Shop() {
           </button>
         </div>
       )}
-
     </section>
   );
 }
