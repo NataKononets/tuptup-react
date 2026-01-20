@@ -16,16 +16,38 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+  /* ---------- VALIDATION ---------- */
 
   function isEmailValid(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function validateField(name, value) {
+    if (name === "name" && !value.trim())
+      return t("CHECKOUT_ERROR_NAME");
+
+    if (name === "email" && !isEmailValid(value))
+      return t("CHECKOUT_ERROR_EMAIL");
+
+    if (name === "address" && !value.trim())
+      return t("CHECKOUT_ERROR_ADDRESS");
+
+    return "";
+  }
+
+  function validateAllFields() {
+    const newErrors = {
+      name: validateField("name", form.name),
+      email: validateField("email", form.email),
+      address: validateField("address", form.address),
+    };
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(Boolean);
   }
 
   function isFormValid() {
@@ -36,13 +58,26 @@ export default function Checkout() {
     );
   }
 
+  /* ---------- HANDLERS ---------- */
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleBlur(e) {
+    const { name, value } = e.target;
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
-
-
     if (form.botField) return;
 
-    if (!isFormValid() || loading) return;
+    if (!validateAllFields()) return;
 
     setLoading(true);
 
@@ -52,6 +87,8 @@ export default function Checkout() {
       setLoading(false);
     }, 1800);
   }
+
+  /* ---------- RENDER ---------- */
 
   return (
     <div className="container py-5" style={{ maxWidth: 620 }}>
@@ -65,7 +102,7 @@ export default function Checkout() {
           className="bg-white border rounded-3 p-4 shadow-sm"
           noValidate
         >
- 
+          {/* honeypot */}
           <input
             type="text"
             name="botField"
@@ -73,46 +110,47 @@ export default function Checkout() {
             onChange={handleChange}
             style={{ display: "none" }}
             tabIndex={-1}
-            autoComplete="off"
           />
 
+          {/* NAME */}
           <div className="mb-3">
             <label className="form-label">
               {t("CHECKOUT_NAME")}
             </label>
             <input
-              type="text"
               name="name"
-              className="form-control"
-              placeholder={t("CHECKOUT_NAME_PH")}
+              className={`form-control ${errors.name ? "is-invalid" : ""}`}
               value={form.name}
               onChange={handleChange}
-              autoComplete="name"
-              required
+              onBlur={handleBlur}
             />
+            {errors.name && (
+              <div className="invalid-feedback">
+                {errors.name}
+              </div>
+            )}
           </div>
 
-
+          {/* EMAIL */}
           <div className="mb-3">
             <label className="form-label">
               {t("CHECKOUT_EMAIL")}
             </label>
             <input
-              type="email"
               name="email"
-              className="form-control"
-              placeholder={t("CHECKOUT_EMAIL_PH")}
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
               value={form.email}
               onChange={handleChange}
-              autoComplete="email"
-              required
+              onBlur={handleBlur}
             />
-            <div className="form-text">
-              {t("CHECKOUT_EMAIL_HELP")}
-            </div>
+            {errors.email && (
+              <div className="invalid-feedback">
+                {errors.email}
+              </div>
+            )}
           </div>
 
-
+          {/* ADDRESS */}
           <div className="mb-4">
             <label className="form-label">
               {t("CHECKOUT_ADDRESS")}
@@ -120,21 +158,25 @@ export default function Checkout() {
             <textarea
               name="address"
               rows="3"
-              className="form-control"
-              placeholder={t("CHECKOUT_ADDRESS_PH")}
+              className={`form-control ${errors.address ? "is-invalid" : ""}`}
               value={form.address}
               onChange={handleChange}
-              autoComplete="street-address"
-              required
+              onBlur={handleBlur}
             />
+            {errors.address && (
+              <div className="invalid-feedback">
+                {errors.address}
+              </div>
+            )}
           </div>
 
-
-          <div className="d-flex justify-content-between align-items-center fw-semibold fs-5 mb-4">
+          {/* TOTAL */}
+          <div className="d-flex justify-content-between fw-semibold fs-5 mb-4">
             <span>{t("CHECKOUT_TOTAL")}</span>
             <span>${totalPrice.toFixed(2)}</span>
           </div>
 
+          {/* BUTTON */}
           <button
             type="submit"
             className="btn btn-dark w-100 py-2"
@@ -146,20 +188,14 @@ export default function Checkout() {
           </button>
         </form>
       ) : (
-     
         <div className="text-center bg-white border rounded-3 p-5 shadow-sm">
-          <h3 className="mb-3">
-            {t("CHECKOUT_SUCCESS_TITLE")}
-          </h3>
-          <p className="text-muted mb-4">
-            {t("CHECKOUT_SUCCESS_TEXT")}
-          </p>
+          <h3>{t("CHECKOUT_SUCCESS_TITLE")}</h3>
+          <p>{t("CHECKOUT_SUCCESS_TEXT")}</p>
 
           <div className="d-flex flex-column gap-3">
             <Link to="/register" className="btn btn-dark">
               {t("CHECKOUT_CREATE_ACCOUNT")}
             </Link>
-
             <button
               className="btn btn-outline-dark"
               onClick={() => navigate("/")}
