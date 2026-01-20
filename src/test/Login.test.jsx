@@ -12,7 +12,7 @@ vi.mock("../context/AuthContext", () => ({
 
 vi.mock("../context/LanguageContext", () => ({
   useLanguage: () => ({
-    t: (key) => key, // просто возвращаем ключ
+    t: (key) => key, 
   }),
 }));
 
