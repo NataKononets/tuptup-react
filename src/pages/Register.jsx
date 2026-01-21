@@ -4,15 +4,11 @@ import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 
 export default function Register() {
-  const { register, loginWithGoogle } = useAuth();
+  const { register } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: ""
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,20 +30,11 @@ export default function Register() {
       await register(form.email, form.password);
       navigate("/checkout");
     } catch (err) {
-      setError(t("REGISTER_ERROR_GENERIC"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleGoogle() {
-    setError("");
-    setLoading(true);
-    try {
-      await loginWithGoogle();
-      navigate("/checkout");
-    } catch (err) {
-      setError(t("LOGIN_GOOGLE_ERROR"));
+      if (err.message === "USER_EXISTS") {
+        setError(t("REGISTER_ERROR_EXISTS"));
+      } else {
+        setError(t("REGISTER_ERROR_GENERIC"));
+      }
     } finally {
       setLoading(false);
     }
@@ -56,89 +43,43 @@ export default function Register() {
   return (
     <div className="container py-5 d-flex justify-content-center">
       <div className="border rounded p-4 w-100" style={{ maxWidth: 420 }}>
-
-        <h2 className="text-center mb-2">
-          {t("REGISTER_TITLE")}
-        </h2>
-        <p className="text-center text-muted mb-4">
-          {t("REGISTER_SUBTITLE")}
-        </p>
+        <h2 className="text-center mb-2">{t("REGISTER_TITLE")}</h2>
 
         {error && (
-          <div className="alert alert-danger py-2 text-center">
+          <div className="alert alert-danger text-center py-2">
             {error}
           </div>
         )}
 
-        {/* GOOGLE */}
-        <button
-          type="button"
-          className="btn btn-outline-dark w-100 mb-3 d-flex align-items-center justify-content-center gap-2"
-          onClick={handleGoogle}
-          disabled={loading}
-        >
-          <span>🔐</span>
-          {t("REGISTER_GOOGLE")}
-        </button>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="email"
+            type="email"
+            className="form-control mb-3"
+            placeholder="email@example.com"
+            value={form.email}
+            onChange={handleChange}
+          />
 
-        <div className="text-center text-muted small mb-3">
-          {t("OR")}
-        </div>
+          <input
+            name="password"
+            type="password"
+            className="form-control mb-4"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={handleChange}
+            minLength={6}
+          />
 
-        {/* EMAIL FORM */}
-        <form onSubmit={handleSubmit} noValidate>
-
-          <div className="mb-3">
-            <label className="form-label">
-              {t("EMAIL")}
-            </label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              placeholder="email@example.com"
-              value={form.email}
-              onChange={handleChange}
-              autoComplete="email"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label">
-              {t("PASSWORD")}
-            </label>
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-              minLength={6}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-dark w-100 py-2"
-            disabled={loading}
-          >
+          <button className="btn btn-dark w-100" disabled={loading}>
             {loading ? t("REGISTER_LOADING") : t("REGISTER_BTN")}
           </button>
         </form>
 
         <div className="text-center mt-4">
-          <span className="text-muted small">
-            {t("HAVE_ACCOUNT")}
-          </span>{" "}
-          <Link to="/login" className="small fw-semibold text-decoration-none">
-            {t("LOGIN")}
-          </Link>
+          <span className="text-muted small">{t("HAVE_ACCOUNT")} </span>
+          <Link to="/login">{t("LOGIN")}</Link>
         </div>
-
       </div>
     </div>
   );

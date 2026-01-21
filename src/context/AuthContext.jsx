@@ -1,56 +1,83 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
-import { auth } from "../firebase/firebase";
 
 const AuthContext = createContext(null);
+
+const USERS_KEY = "tup_users";       // все пользователи
+const AUTH_KEY = "tup_auth_user";    // текущая сессия
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const register = (email, password) =>
-    createUserWithEmailAndPassword(auth, email, password);
-
-  const login = (email, password) =>
-    signInWithEmailAndPassword(auth, email, password);
-
-  const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  };
-
-  const logout = () => signOut(auth);
-
+  // 🔄 восстановление сессии
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); 
-      setLoading(false);
-    });
-
-    return unsub;
+    const stored = localStorage.getItem(AUTH_KEY);
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+    setLoading(false);
   }, []);
 
-  const value = useMemo(
-    () => ({
-      user,
-      register,
-      login,
-      loginWithGoogle,
-      logout,
-    }),
-    [user]
-  );
+  const getUsers = () =>
+    JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+
+  const saveUsers = (users) =>
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+  // ✍️ Регистрация
+  const register = (email, password) => {
+    const users = getUsers();
+
+    if (users.some(u => u.email === email)) {
+      throw new Error("USER_EXISTS");
+    }
+
+    const newUser = { email, password };
+    const updatedUsers = [...users, newUser];
+
+    saveUsers(updatedUsers);
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ email }));
+    setUser({ email });
+
+    return Promise.resolve({ email });
+  };
+
+  // 🔐 Логин
+  const login = (email, password) => {
+    const users = getUsers();
+    const found = users.find(
+      u => u.email === email && u.password === password
+    );
+
+    if (!found) {
+      throw new Error("INVALID_CREDENTIALS");
+    }
+
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ email }));
+    setUser({ email });
+
+    return Promise.resolve({ email });
+  };
+
+  // 🚪 Logout
+  const logout = () => {
+    localStorage.removeItem(AUTH_KEY);
+    setUser(null);
+  };
+
+  const value = useMemo(() => ({
+    user,
+    isAuthenticated: !!user,
+    register,
+    login,
+    logout,
+  }), [user]);
+
+  if (loading) return null;
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
