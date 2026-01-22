@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const AuthContext = createContext(null);
 
-const USERS_KEY = "tup_users";       // все пользователи
-const AUTH_KEY = "tup_auth_user";    // текущая сессия
+const USERS_KEY = "tup_users";      
+const AUTH_KEY = "tup_auth_user";    
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
