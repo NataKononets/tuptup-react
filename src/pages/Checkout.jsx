@@ -17,39 +17,36 @@ export default function Checkout() {
 
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
-
   /* ===== VALIDATORS ===== */
 
-  function isEmailValid(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
+  const isEmailValid = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  function isNameValid(name) {
-  
-    return /^[A-Za-zА-Яа-яЁёІіЇїЄє\s]{2,}$/.test(name.trim());
-  }
+  const isNameValid = (name) =>
+    /^[A-Za-zА-Яа-яЁёІіЇїЄє\s]{2,}$/.test(name.trim());
+
+  const isAddressValid = (address) =>
+    address.trim().length >= 10 && /[A-Za-zА-Яа-яЁёІіЇїЄє]/.test(address);
 
   function validateField(name, value) {
     switch (name) {
       case "name":
         if (!value.trim()) return t("CHECKOUT_ERROR_NAME_REQUIRED");
-        if (!isNameValid(value)) return t("CHECKOUT_ERROR_NAME");
+        if (!isNameValid(value)) return t("CHECKOUT_ERROR_NAME_FORMAT");
         return "";
 
       case "email":
         if (!value.trim()) return t("CHECKOUT_ERROR_EMAIL_REQUIRED");
-        if (!isEmailValid(value)) return t("CHECKOUT_ERROR_EMAIL");
+        if (!isEmailValid(value)) return t("CHECKOUT_ERROR_EMAIL_FORMAT");
         return "";
 
       case "address":
-        if (!value.trim()) return t("CHECKOUT_ERROR_ADDRESS");
+        if (!value.trim()) return t("CHECKOUT_ERROR_ADDRESS_REQUIRED");
+        if (!isAddressValid(value)) return t("CHECKOUT_ERROR_ADDRESS_FORMAT");
         return "";
 
       default:
@@ -57,19 +54,32 @@ export default function Checkout() {
     }
   }
 
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
   function handleBlur(e) {
     const { name, value } = e.target;
+
+    setTouched((prev) => ({ ...prev, [name]: true }));
     setErrors((prev) => ({
       ...prev,
       [name]: validateField(name, value),
     }));
   }
 
+  function getInputClass(name) {
+    if (!touched[name]) return "form-control";
+    if (errors[name]) return "form-control is-invalid";
+    return "form-control is-valid";
+  }
+
   function isFormValid() {
     return (
       isNameValid(form.name) &&
       isEmailValid(form.email) &&
-      form.address.trim()
+      isAddressValid(form.address)
     );
   }
 
@@ -84,9 +94,9 @@ export default function Checkout() {
     };
 
     setErrors(newErrors);
+    setTouched({ name: true, email: true, address: true });
 
-    const hasErrors = Object.values(newErrors).some(Boolean);
-    if (hasErrors) return;
+    if (Object.values(newErrors).some(Boolean)) return;
 
     setLoading(true);
 
@@ -94,7 +104,7 @@ export default function Checkout() {
       clearCart();
       setSuccess(true);
       setLoading(false);
-    }, 1800);
+    }, 1500);
   }
 
   return (
@@ -107,7 +117,7 @@ export default function Checkout() {
           className="bg-white border rounded-3 p-4 shadow-sm"
           noValidate
         >
-          {/* honeypot */}
+  
           <input
             type="text"
             name="botField"
@@ -124,10 +134,11 @@ export default function Checkout() {
             <input
               type="text"
               name="name"
-              className={`form-control ${errors.name ? "is-invalid" : ""}`}
+              className={getInputClass("name")}
               value={form.name}
               onChange={handleChange}
               onBlur={handleBlur}
+              placeholder={t("CHECKOUT_NAME_PH")}
             />
             {errors.name && (
               <div className="invalid-feedback">{errors.name}</div>
@@ -140,15 +151,18 @@ export default function Checkout() {
             <input
               type="email"
               name="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+              className={getInputClass("email")}
               value={form.email}
               onChange={handleChange}
               onBlur={handleBlur}
+              placeholder={t("CHECKOUT_EMAIL_PH")}
             />
             {errors.email ? (
               <div className="invalid-feedback">{errors.email}</div>
             ) : (
-            <div className="form-text">{t("CHECKOUT_EMAIL_HELP")}</div>
+              <div className="form-text">
+                {t("CHECKOUT_EMAIL_HELP")}
+              </div>
             )}
           </div>
 
@@ -158,10 +172,11 @@ export default function Checkout() {
             <textarea
               name="address"
               rows="3"
-              className={`form-control ${errors.address ? "is-invalid" : ""}`}
+              className={getInputClass("address")}
               value={form.address}
               onChange={handleChange}
               onBlur={handleBlur}
+              placeholder={t("CHECKOUT_ADDRESS_PH")}
             />
             {errors.address && (
               <div className="invalid-feedback">{errors.address}</div>
